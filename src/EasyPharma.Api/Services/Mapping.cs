@@ -5,9 +5,9 @@ namespace EasyPharma.Api.Services;
 
 public static class Mapping
 {
-    public static UserResponse ToResponse(User u) =>
+    public static UserResponse ToResponse(User u, string? pharmacyName = null) =>
         new(u.Id, u.Email, u.FirstName, u.LastName, u.Phone, u.Role, u.Address, u.City, u.Latitude, u.Longitude,
-            u.IsActive, u.IsVerified, u.CreatedAt, u.PharmacyId, null);
+            u.IsActive, u.IsVerified, u.CreatedAt, u.PharmacyId, pharmacyName);
 
     public static MedicationDto ToDto(Medication m) =>
         new(m.Id, m.Name, m.GenericName, m.TherapeuticClass, m.Description, m.Dosage, m.PhotoUrl, m.NoticePdfUrl,

@@ -92,6 +92,8 @@ public class OrdersController(EasyPharmaDbContext db) : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = order.Id }, Mapping.ToDto(saved));
     }
 
+    // « me » est l'URL appelée par le front Angular ; « my-orders » celle du backend Spring Boot.
+    [HttpGet("me")]
     [HttpGet("my-orders")]
     public async Task<IEnumerable<OrderDto>> MyOrders()
     {

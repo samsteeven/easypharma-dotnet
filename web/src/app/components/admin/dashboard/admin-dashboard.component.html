@@ -1,0 +1,148 @@
+<div class="page-bg-refined p-8 space-y-8 animate-fadeInUp">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Tableau de bord</h1>
+      <p class="mt-1 text-slate-500 font-medium">Vue d'ensemble de l'administration système.</p>
+    </div>
+    <div class="flex gap-4">
+      <button (click)="exportData()"
+        class="inline-flex items-center px-5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50 hover:shadow-sm active:scale-95 transition-all duration-200">
+        <fa-icon [icon]="faDownload" class="mr-2 text-indigo-500"></fa-icon> Exporter les données
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <!-- Revenue -->
+    <div class="auth-card !p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center gap-5">
+        <div class="icon-container-indigo w-14 h-14 shrink-0">
+          <fa-icon [icon]="faCoins" class="text-xl"></fa-icon>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Revenus</h2>
+          <p class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            {{ (globalStats?.totalRevenue || 0) | number:'1.0-0' }} <span class="text-sm font-bold">FCFA</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patients -->
+    <div class="auth-card !p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center gap-5">
+        <div class="icon-container-blue w-14 h-14 shrink-0">
+          <fa-icon [icon]="faUsers" class="text-xl"></fa-icon>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Patients</h2>
+          <p class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            {{ globalStats?.totalPatients || 0 }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Pharmacies -->
+    <div class="auth-card !p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center gap-5">
+        <div class="icon-container-emerald w-14 h-14 shrink-0">
+          <fa-icon [icon]="faClinicMedical" class="text-xl"></fa-icon>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Pharmacies</h2>
+          <p class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            {{ globalStats?.activePharmacies || 0 }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Orders -->
+    <div class="auth-card !p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center gap-5">
+        <div class="p-3 rounded-2xl bg-amber-50 text-amber-600 w-14 h-14 flex items-center justify-center shrink-0">
+          <fa-icon [icon]="faShoppingCart" class="text-xl"></fa-icon>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider">En Attente</h2>
+          <p class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            {{ globalStats?.pendingOrders || 0 }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Top Sold Medications -->
+    <div class="auth-card !p-0 overflow-hidden">
+      <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-900 tracking-tight">Médicaments les plus vendus</h3>
+        <fa-icon [icon]="faChartLine" class="text-indigo-400"></fa-icon>
+      </div>
+      <div class="p-6">
+        <div class="h-64 mb-6" *ngIf="topSold.length > 0">
+          <canvas #soldChart></canvas>
+        </div>
+
+        <ul class="divide-y divide-slate-100 border-t border-slate-50">
+          <li *ngFor="let item of topSold"
+            class="py-4 flex justify-between items-center group hover:bg-slate-50/50 transition-colors -mx-6 px-6">
+            <div class="flex items-center gap-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 text-xs text-indigo-500">
+                <fa-icon [icon]="faPills"></fa-icon>
+              </div>
+              <div>
+                <p class="text-[11px] font-bold text-slate-900">{{ item.medicationName }}</p>
+                <p class="text-[9px] font-semibold text-slate-400">{{ item.medicationGenericName }}</p>
+              </div>
+            </div>
+            <div
+              class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+              {{ item.soldCount }}
+            </div>
+          </li>
+          <li *ngIf="topSold.length === 0" class="py-12 text-center">
+            <div class="text-slate-200 mb-2">
+              <fa-icon [icon]="faBoxOpen" size="3x"></fa-icon>
+            </div>
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Aucune donnée</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Top Search Trends -->
+    <div class="auth-card !p-0 overflow-hidden">
+      <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-900 tracking-tight">Tendances de recherche</h3>
+        <fa-icon [icon]="faChartPie" class="text-indigo-400"></fa-icon>
+      </div>
+      <div class="p-6">
+        <div class="h-64 mb-6" *ngIf="topSearches.length > 0">
+          <canvas #trendsChart></canvas>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
+          <span *ngFor="let trend of topSearches"
+            class="inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-bold bg-white border border-slate-100 text-slate-600 hover:border-indigo-200 transition-colors cursor-default">
+            <fa-icon [icon]="faSearch" class="mr-2 text-slate-300"></fa-icon>
+            {{ trend.query }}
+            <span class="ml-2 text-indigo-500">{{ trend.searchCount }}</span>
+          </span>
+          <div *ngIf="topSearches.length === 0" class="w-full py-12 text-center">
+            <div class="text-slate-200 mb-2">
+              <fa-icon [icon]="faSearch" size="3x"></fa-icon>
+            </div>
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Aucune recherche</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

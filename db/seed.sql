@@ -1,4 +1,5 @@
--- Jeu de données de démonstration pour SQL Server (4 pharmacies dont 1 PENDING, 1 médicament).
+-- Jeu de données de démonstration (4 pharmacies dont 1 PENDING, 1 médicament, 5 comptes).
+-- Comptes : admin@easypharma.local (SUPER_ADMIN) et a1..a4@test.local (PHARMACY_ADMIN), mot de passe Test1234!
 -- À lancer avec sqlcmd -I (QUOTED_IDENTIFIER ON, requis par l index spatial).
 SET NOCOUNT ON;
 DECLARE @m uniqueidentifier = NEWID();
@@ -10,11 +11,16 @@ DECLARE @n int=1, @u uniqueidentifier;
 WHILE @n<=4 BEGIN
   SET @u=NEWID();
   INSERT INTO users (id,is_active,is_verified,created_at,updated_at,phone,role,first_name,last_name,email,password)
-   VALUES (@u,1,1,SYSDATETIME(),SYSDATETIME(),CONCAT('69000000',@n),'PHARMACY_ADMIN','T','A',CONCAT('a',@n,'@test.local'),'x');
+   VALUES (@u,1,1,SYSDATETIME(),SYSDATETIME(),CONCAT('69000000',@n),'PHARMACY_ADMIN','T','A',CONCAT('a',@n,'@test.local'),'$2a$10$DzDReIMALgTxWnLcCy0emeuLcmXgbbxxah3krC48m5cMIhxOpOjL2');
   INSERT INTO pharmacies (id,user_id,latitude,longitude,created_at,updated_at,phone,status,license_number,city,name,license_document_url,address)
    SELECT NEWID(),@u,lat,lon,SYSDATETIME(),SYSDATETIME(),CONCAT('2',n),st,CONCAT('L',n),city,nm,'u','adr' FROM @p WHERE n=@n;
   SET @n+=1;
 END
 INSERT INTO pharmacy_medications (id,is_available,price,stock_quantity,created_at,updated_at,medication_id,pharmacy_id)
 SELECT NEWID(),1,1000+ROW_NUMBER() OVER (ORDER BY name)*100,10,SYSDATETIME(),SYSDATETIME(),@m,id FROM pharmacies;
+-- Chaque propriétaire est rattaché à sa pharmacie (le front en tient compte pour la redirection après connexion).
+UPDATE u SET pharmacy_id = p.id FROM users u JOIN pharmacies p ON p.user_id = u.id;
+
+INSERT INTO users (id,is_active,is_verified,created_at,updated_at,phone,role,first_name,last_name,email,password)
+VALUES (NEWID(),1,1,SYSDATETIME(),SYSDATETIME(),'690999999','SUPER_ADMIN','Admin','EasyPharma','admin@easypharma.local','$2a$10$DzDReIMALgTxWnLcCy0emeuLcmXgbbxxah3krC48m5cMIhxOpOjL2');
 SELECT COUNT(*) AS pharmacies FROM pharmacies;

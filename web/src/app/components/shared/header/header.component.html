@@ -1,0 +1,72 @@
+<header class="header">
+  <div class="container">
+    <nav class="navbar">
+      <!-- Logo avec animation -->
+      <a routerLink="/" class="logo">
+        <div class="logo-icon !rounded-xl !bg-indigo-600">
+          <fa-icon [icon]="faPills"></fa-icon>
+        </div>
+        <span class="logo-text">EasyPharma</span>
+      </a>
+
+      <!-- Navigation principale -->
+      <div class="nav-links">
+        <a routerLink="/" class="nav-link">
+          <fa-icon [icon]="faHome" class="mr-1"></fa-icon>
+          <span>Accueil</span>
+        </a>
+        <a href="#features" class="nav-link">
+          <fa-icon [icon]="faStar" class="mr-1"></fa-icon>
+          <span>Services</span>
+        </a>
+        <a href="#how-it-works" class="nav-link">
+          <fa-icon [icon]="faPlayCircle" class="mr-1"></fa-icon>
+          <span>Comment ça marche</span>
+        </a>
+      </div>
+
+      <!-- Actions utilisateur -->
+      <div class="nav-actions">
+        <a routerLink="/login" class="btn-ghost !font-bold">
+          <fa-icon [icon]="faSignInAlt" class="mr-2"></fa-icon>
+          <span>Connexion</span>
+        </a>
+        <a routerLink="/register" class="btn-primary !py-2.5 !px-6 !text-sm">
+          <fa-icon [icon]="faUserPlus" class="mr-2"></fa-icon>
+          <span>S'inscrire</span>
+        </a>
+      </div>
+
+      <!-- Menu mobile -->
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <fa-icon [icon]="isMobileMenuOpen ? faTimes : faBars"></fa-icon>
+      </button>
+    </nav>
+
+    <!-- Menu mobile dropdown -->
+    <div class="mobile-menu" [class.active]="isMobileMenuOpen">
+      <a routerLink="/" class="mobile-nav-link" (click)="toggleMobileMenu()">
+        <fa-icon [icon]="faHome"></fa-icon>
+        <span>Accueil</span>
+      </a>
+      <a href="#features" class="mobile-nav-link" (click)="toggleMobileMenu()">
+        <fa-icon [icon]="faStar"></fa-icon>
+        <span>Services</span>
+      </a>
+      <a href="#how-it-works" class="mobile-nav-link" (click)="toggleMobileMenu()">
+        <fa-icon [icon]="faPlayCircle"></fa-icon>
+        <span>Comment ça marche</span>
+      </a>
+      <div class="mobile-actions">
+        <a routerLink="/login" class="btn-ghost !w-full !justify-center" (click)="toggleMobileMenu()">
+          <fa-icon [icon]="faSignInAlt" class="mr-2"></fa-icon>
+          <span>Connexion</span>
+        </a>
+        <a routerLink="/register" class="btn-primary !w-full !justify-center !py-3" (click)="toggleMobileMenu()">
+          <fa-icon [icon]="faUserPlus" class="mr-2"></fa-icon>
+          <span>S'inscrire</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

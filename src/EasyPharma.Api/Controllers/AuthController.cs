@@ -17,6 +17,9 @@ public class AuthController(EasyPharmaDbContext db, TokenService tokens) : Contr
     [HttpPost("register")]
     public async Task<ActionResult<ApiResponse<AuthResponse>>> Register(RegisterRequest request)
     {
+        if (request.Role is not null and not UserRole.PATIENT)
+            return BadRequest(ApiResponse<AuthResponse>.Error("Seule l'inscription d'un patient est prise en charge"));
+
         var email = request.Email.Trim().ToLowerInvariant();
         if (await db.Users.AnyAsync(u => u.Email == email))
             return Conflict(ApiResponse<AuthResponse>.Error("Cet email est déjà utilisé"));
@@ -58,8 +61,17 @@ public class AuthController(EasyPharmaDbContext db, TokenService tokens) : Contr
         if (user is null || !user.IsActive || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             return Unauthorized(ApiResponse<AuthResponse>.Error("Email ou mot de passe incorrect"));
 
-        return Ok(ApiResponse<AuthResponse>.Ok(BuildAuth(user), "Connexion réussie"));
+        return Ok(ApiResponse<AuthResponse>.Ok(BuildAuth(user, await PharmacyNameAsync(user)), "Connexion réussie"));
     }
+
+    /// <summary>Les jetons sont sans état : la déconnexion ne fait rien côté serveur (le front efface sa session).</summary>
+    [HttpPost("logout")]
+    public ActionResult<ApiResponse<object>> Logout() => Ok(ApiResponse<object>.Ok(new { }, "Déconnexion réussie"));
+
+    /// <summary>Non pris en charge dans cette version : pas de refresh token (voir README).</summary>
+    [HttpPost("refresh-token")]
+    public ActionResult<ApiResponse<AuthResponse>> RefreshToken() =>
+        Unauthorized(ApiResponse<AuthResponse>.Error("Rafraîchissement de jeton non pris en charge : se reconnecter"));
 
     [Authorize]
     [HttpGet("me")]
@@ -69,11 +81,14 @@ public class AuthController(EasyPharmaDbContext db, TokenService tokens) : Contr
         var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
         return user is null
             ? NotFound(ApiResponse<UserResponse>.Error("Utilisateur introuvable"))
-            : Ok(ApiResponse<UserResponse>.Ok(Mapping.ToResponse(user), "OK"));
+            : Ok(ApiResponse<UserResponse>.Ok(Mapping.ToResponse(user, await PharmacyNameAsync(user)), "OK"));
     }
 
-    private AuthResponse BuildAuth(User user) =>
-        new(tokens.Generate(user), null, "Bearer", tokens.ExpiresInMs, Mapping.ToResponse(user));
+    private Task<string?> PharmacyNameAsync(User user) =>
+        db.Pharmacies.Where(p => p.Id == user.PharmacyId).Select(p => p.Name).FirstOrDefaultAsync();
+
+    private AuthResponse BuildAuth(User user, string? pharmacyName = null) =>
+        new(tokens.Generate(user), null, "Bearer", tokens.ExpiresInMs, Mapping.ToResponse(user, pharmacyName));
 }
 
 public static class ClaimsExtensions

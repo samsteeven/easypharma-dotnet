@@ -1,0 +1,251 @@
+<div class="page-bg-refined p-4 md:p-8 space-y-8 animate-fadeInUp">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-semibold text-slate-900 tracking-tight">Recherche Nationale</h1>
+            <p class="mt-1 text-slate-500 font-medium tracking-tight">Trouvez vos médicaments au meilleur prix dans tout
+                le réseau Medicam.</p>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="auth-card !p-6 shadow-xl shadow-slate-200/50 border-indigo-50">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <!-- Search Input -->
+            <div class="lg:col-span-2">
+                <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 px-1">Recherche</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <fa-icon [icon]="faSearch"
+                            class="text-slate-400 group-focus-within:text-indigo-500 transition-colors text-sm"></fa-icon>
+                    </div>
+                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                        placeholder="Ex: Paracétamol, Fièvre, Maux de tête..."
+                        class="form-input !pl-11 !py-3 font-semibold">
+                </div>
+            </div>
+
+            <!-- Therapeutic Class -->
+            <div>
+                <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 px-1">Classe</label>
+                <div class="relative">
+                    <select [(ngModel)]="selectedClass" (change)="onSearch()"
+                        class="form-input !py-3 !appearance-none font-bold">
+                        <option value="">Toutes les classes</option>
+                        <option *ngFor="let class of therapeuticClasses" [value]="class">{{ class }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                        <fa-icon [icon]="faChevronDown" class="text-slate-400 text-xs"></fa-icon>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 px-1">Trier
+                    par</label>
+                <div class="relative">
+                    <select [(ngModel)]="sortBy" (change)="onSortChange()"
+                        class="form-input !py-3 !appearance-none font-bold text-indigo-600">
+                        <option value="PRICE">Prix (Croissant)</option>
+                        <option value="RATING">Note (Décroissant)</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                        <fa-icon [icon]="faSortAmountDown" class="text-indigo-400 text-xs"></fa-icon>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action -->
+            <div class="flex items-end">
+                <button (click)="onSearch()"
+                    class="btn-primary !py-3 px-8 shadow-lg shadow-indigo-100 whitespace-nowrap min-w-[160px]">
+                    <fa-icon [icon]="faSearch" class="mr-2 text-xs"></fa-icon>
+                    <span class="text-xs uppercase tracking-widest font-bold">Rechercher</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-24">
+        <div class="w-12 h-12 mb-4 animate-spin flex items-center justify-center text-indigo-600">
+            <fa-icon [icon]="faCircleNotch" class="text-4xl"></fa-icon>
+        </div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Analyse du réseau en cours...</p>
+    </div>
+
+    <!-- Results Grid -->
+    <div *ngIf="!loading && results.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div *ngFor="let item of results"
+            class="auth-card !p-0 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group border-transparent hover:border-indigo-100">
+
+            <!-- Result Header -->
+            <div class="p-6 bg-slate-50/50 border-b border-slate-100">
+                <div class="flex justify-between items-start gap-4">
+                    <div class="flex-1 min-w-0">
+                        <h3
+                            class="text-xl font-semibold text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors truncate">
+                            {{ item.medicationName }}</h3>
+                        <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1 truncate">{{
+                            item.medicationGenericName || 'Produit Spécialisé' }}</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-2xl font-bold text-emerald-600 tracking-tighter">
+                            {{ item.price | number:'1.0-0' }} <span class="text-xs ml-0.5">XAF</span>
+                        </div>
+                        <div *ngIf="item.pharmacy.averageRating" class="flex items-center justify-end gap-1.5 mt-1">
+                            <div class="flex items-center text-amber-500 text-[10px]">
+                                <fa-icon [icon]="faStar"></fa-icon>
+                                <span class="ml-1 font-bold">{{ item.pharmacy.averageRating | number:'1.1-1' }}</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">({{
+                                item.pharmacy.ratingCount }} avis)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="p-6">
+                <p class="text-sm font-medium text-slate-500 leading-relaxed line-clamp-2">
+                    {{ item.medicationDescription || 'Aucune description détaillée disponible pour ce produit.' }}
+                </p>
+
+                <!-- Pharmacy Info -->
+                <div class="mt-8 pt-6 border-t border-slate-100 flex items-center gap-4">
+                    <div class="icon-container-blue w-11 h-11 shrink-0 rounded-xl !bg-indigo-50 !text-indigo-600">
+                        <fa-icon [icon]="faClinicMedical" class="text-sm"></fa-icon>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-900 truncate tracking-tight">{{ item.pharmacy.name
+                            }}</p>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <fa-icon [icon]="faMapMarkerAlt" class="text-slate-300 text-[10px]"></fa-icon>
+                            <p class="text-[10px] font-bold text-slate-400 truncate uppercase tracking-widest">{{
+                                item.pharmacy.address }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div
+                class="px-6 py-4 bg-slate-50/30 border-t border-slate-100 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En stock</span>
+                    <span *ngIf="item.expiryDate" class="text-[9px] font-bold text-rose-500 uppercase tracking-tighter">
+                        Exp : {{ item.expiryDate | date:'MM/yyyy' }}
+                    </span>
+                </div>
+                <button (click)="openDetails(item)"
+                    class="text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest flex items-center gap-2 transition-colors">
+                    Plus d'infos <fa-icon [icon]="faChevronDown" class="text-[8px]"></fa-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Results -->
+    <div *ngIf="!loading && results.length === 0 && hasSearched"
+        class="auth-card !py-24 flex flex-col items-center border-dashed border-2 border-slate-200 bg-transparent shadow-none">
+        <div class="icon-container-blue w-20 h-20 mb-6 !bg-slate-50 !text-slate-300">
+            <fa-icon [icon]="faSearch" class="text-3xl"></fa-icon>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-900 tracking-tight">Aucun résultat trouvé</h3>
+        <p class="mt-2 text-slate-500 font-medium text-center max-w-sm">Désolé, nous n'avons trouvé aucun médicament
+            correspondant à vos critères. Essayez avec d'autres termes.</p>
+        <button (click)="onSearch()" class="mt-8 btn-primary !px-10">
+            Actualiser
+        </button>
+    </div>
+
+    <!-- Medication Detail Modal -->
+    <div *ngIf="showDetailModal && selectedResult" class="fixed inset-0 z-[100] overflow-y-auto">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" (click)="closeDetails()"></div>
+
+        <div class="flex min-h-screen items-center justify-center p-4">
+            <div class="auth-card !p-0 w-full max-w-2xl overflow-hidden animate-fadeInUp shadow-2xl">
+                <!-- Modal Header -->
+                <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl shadow-indigo-100 transition-transform">
+                            <fa-icon [icon]="faCapsules" class="text-2xl"></fa-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-900 tracking-tighter">{{
+                                selectedResult.medicationName }}</h3>
+                            <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">{{
+                                selectedResult.medicationGenericName || 'Spécialité Pharmaceutique' }}</p>
+                        </div>
+                    </div>
+                    <button (click)="closeDetails()"
+                        class="w-10 h-10 rounded-xl hover:bg-white flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">
+                        <fa-icon [icon]="faTimes"></fa-icon>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-8 space-y-8">
+                    <!-- Price & Availability -->
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
+                            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mb-1">Prix de
+                                vente</p>
+                            <div class="text-3xl font-bold text-emerald-700 tracking-tighter">
+                                {{ selectedResult.price | number:'1.0-0' }} <span
+                                    class="text-sm ml-1 text-emerald-500">XAF</span>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100 flex flex-col justify-center">
+                            <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em] mb-1">
+                                Disponibilité</p>
+                            <div class="text-xl font-bold text-indigo-700 tracking-tight">En Stock</div>
+                            <div *ngIf="selectedResult.expiryDate"
+                                class="text-[10px] font-bold text-rose-500 uppercase mt-1">
+                                Expire le : {{ selectedResult.expiryDate | date:'mediumDate' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 px-1">
+                            Indications & Description</p>
+                        <div class="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                            <p class="text-slate-600 font-medium leading-relaxed">
+                                {{ selectedResult.medicationDescription || 'Informations détaillées non disponibles.
+                                Veuillez consulter un professionnel de santé.' }}
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <!-- Pharmacy Footer -->
+                    <div class="pt-8 border-t border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                <fa-icon [icon]="faClinicMedical" class="text-lg"></fa-icon>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 leading-none">{{
+                                    selectedResult.pharmacy.name }}</p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{{
+                                    selectedResult.pharmacy.address }}</p>
+                            </div>
+                        </div>
+                        <button
+                            class="btn-primary !px-8 shadow-md shadow-indigo-100 transition-all hover:-translate-y-0.5">
+                            Contacter la pharmacie
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,173 @@
+<div class="py-12 bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+        <!-- HEADER -->
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Mon Profil
+        </h2>
+
+        <!-- GLOBAL MESSAGE -->
+        <div *ngIf="message"
+            [ngClass]="{'bg-green-100 border-green-400 text-green-700': message.type === 'success', 'bg-red-100 border-red-400 text-red-700': message.type === 'error'}"
+            class="px-4 py-3 rounded relative border mb-4" role="alert">
+            <span class="block sm:inline">{{ message.text }}</span>
+        </div>
+
+        <!-- SECTION 1: PROFILE INFORMATION -->
+        <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            <div class="max-w-xl">
+                <header>
+                    <h2 class="text-lg font-medium text-gray-900">Information du Profil</h2>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Mettez à jour les informations de votre profil et votre adresse email.
+                    </p>
+                </header>
+
+                <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="mt-6 space-y-6">
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="firstName">Prénom</label>
+                        <input id="firstName" formControlName="firstName" type="text"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                            [class.border-red-500]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="lastName">Nom</label>
+                        <input id="lastName" formControlName="lastName" type="text"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="email">Email</label>
+                        <input id="email" formControlName="email" type="email"
+                            class="border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed rounded-md shadow-sm mt-1 block w-full">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="phone">Téléphone</label>
+                        <input id="phone" formControlName="phone" type="text"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="address">Adresse</label>
+                        <input id="address" formControlName="address" type="text"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="city">Ville</label>
+                        <input id="city" formControlName="city" type="text"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full">
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button type="submit" [disabled]="isSaving"
+                            class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50">
+                            {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
+                        </button>
+
+                        <p *ngIf="message?.type === 'success' && !isSaving && !isSavingPassword"
+                            class="text-sm text-gray-600 animate-fade-in-out">
+                            Sauvegardé.
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- SECTION 2: UPDATE PASSWORD -->
+        <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            <div class="max-w-xl">
+                <header>
+                    <h2 class="text-lg font-medium text-gray-900">Modifier le Mot de Passe</h2>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Assurez-vous que votre compte utilise un mot de passe long et aléatoire pour rester sécurisé.
+                    </p>
+                </header>
+
+                <form [formGroup]="passwordForm" (ngSubmit)="onUpdatePassword()" class="mt-6 space-y-6">
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="current_password">Mot de passe
+                            actuel</label>
+                        <input id="current_password" formControlName="currentPassword" type="password"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="password">Nouveau mot de
+                            passe</label>
+                        <input id="password" formControlName="newPassword" type="password"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700" for="password_confirmation">Confirmer le
+                            mot de passe</label>
+                        <input id="password_confirmation" formControlName="confirmPassword" type="password"
+                            class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full">
+                        <p *ngIf="passwordForm.errors?.['mismatch']" class="text-sm text-red-600 mt-1">Les mots de passe
+                            ne correspondent pas.</p>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button type="submit" [disabled]="passwordForm.invalid || isSavingPassword"
+                            class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50">
+                            {{ isSavingPassword ? 'Modification...' : 'Sauvegarder' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- SECTION 3: DELETE ACCOUNT -->
+        <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            <div class="max-w-xl">
+                <header>
+                    <h2 class="text-lg font-medium text-gray-900">Supprimer le Compte</h2>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Une fois votre compte supprimé, toutes ses ressources et données seront définitivement effacées.
+                    </p>
+                </header>
+
+                <button (click)="confirmDelete()"
+                    class="mt-6 inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    Supprimer le compte
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div *ngIf="isDeleteModalOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <div class="relative w-full max-w-lg mx-auto my-6 bg-white rounded-lg shadow-xl overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900">
+                    Êtes-vous sûr de vouloir supprimer votre compte ?
+                </h2>
+                <p class="mt-1 text-sm text-gray-600">
+                    Une fois votre compte supprimé, toutes ses ressources et données seront définitivement effacées.
+                    Veuillez entrer votre mot de passe pour confirmer que vous souhaitez supprimer définitivement votre
+                    compte.
+                </p>
+
+                <div class="mt-6 flex justify-end">
+                    <button (click)="cancelDelete()"
+                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                        Annuler
+                    </button>
+
+                    <button (click)="performDelete()" [disabled]="isSaving"
+                        class="ml-3 inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                        {{ isSaving ? 'Suppression...' : 'Supprimer le compte' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

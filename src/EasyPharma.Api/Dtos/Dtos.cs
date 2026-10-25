@@ -24,7 +24,8 @@ public record RegisterRequest(
     string? Address,
     string? City,
     decimal? Latitude,
-    decimal? Longitude);
+    decimal? Longitude,
+    UserRole? Role = null);
 
 public record LoginRequest([Required] string Email, [Required] string Password);
 
@@ -50,6 +51,11 @@ public record PharmacyDto(
     decimal Latitude, decimal Longitude, string? Description, string? OpeningHours,
     double? AverageRating, int? RatingCount, PharmacyStatus Status, string LicenseDocumentUrl,
     DateTime? ValidatedAt, DateTime CreatedAt, DateTime UpdatedAt);
+
+public record PatientMedicationSearchResultDto(
+    Guid MedicationId, string MedicationName, string? MedicationGenericName, string? MedicationDescription,
+    string? MedicationPhotoUrl, decimal Price, bool IsAvailable, int StockQuantity, DateOnly? ExpiryDate,
+    PharmacyDto Pharmacy, double? DistanceKm, double? AverageRating, int? RatingCount);
 
 public record CreateOrderItemDto([Required] Guid MedicationId, [Range(1, 1000)] int Quantity);
 

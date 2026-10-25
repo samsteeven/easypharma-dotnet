@@ -54,6 +54,14 @@ public class MedicationsController(EasyPharmaDbContext db) : ControllerBase
 [Route("api/v1/pharmacies")]
 public class PharmaciesController(EasyPharmaDbContext db) : ControllerBase
 {
+    /// <summary>Fiche d'une pharmacie (publique, comme GET /api/v1/pharmacies/** côté Spring Boot).</summary>
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<PharmacyDto>> Get(Guid id)
+    {
+        var pharmacy = await db.Pharmacies.AsNoTracking().Include(p => p.Owner).FirstOrDefaultAsync(p => p.Id == id);
+        return pharmacy is null ? NotFound() : Mapping.ToDto(pharmacy);
+    }
+
     private sealed record NearbyRow(Guid Id, double DistanceM);
 
     /// <summary>

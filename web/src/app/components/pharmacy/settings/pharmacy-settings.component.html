@@ -1,0 +1,122 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Paramètres de la Pharmacie</h1>
+            <p class="mt-1 text-sm text-gray-500">Gérez les informations publiques de votre établissement.</p>
+        </div>
+    </div>
+
+    <div class="bg-white shadow rounded-lg max-w-3xl">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="p-8 text-center">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-blue-600"></i>
+            <p class="mt-4 text-gray-500">Chargement des informations...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 m-6">
+            <p>{{ errorMessage }}</p>
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="p-4 bg-green-50 border-l-4 border-green-500 text-green-700 m-6 fade-in">
+            <p><i class="fas fa-check-circle mr-2"></i> {{ successMessage }}</p>
+        </div>
+
+        <!-- Form -->
+        <form *ngIf="!isLoading" [formGroup]="settingsForm" (ngSubmit)="onSubmit()" class="divide-y divide-gray-200">
+            <div class="p-6 space-y-6">
+
+                <!-- Identification (Read-Only) -->
+                <div>
+                    <h3 class="text-lg font-medium leading-6 text-gray-900">Identification</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Ces informations sont validées par l'administration et ne peuvent être modifiées directement.
+                    </p>
+                    <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div class="sm:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700">Nom de la pharmacie</label>
+                            <input type="text" formControlName="name"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+
+                        <div class="sm:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700">Ville</label>
+                            <input type="text" formControlName="city"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+
+                        <div class="sm:col-span-6">
+                            <label class="block text-sm font-medium text-gray-700">Adresse complète</label>
+                            <input type="text" formControlName="address"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editable Information -->
+                <div>
+                    <h3 class="text-lg font-medium leading-6 text-gray-900">Informations Publiques</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Ces informations sont visibles par les patients lors de leurs recherches.
+                    </p>
+                    <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+
+                        <div class="sm:col-span-6">
+                            <label for="openingHours" class="block text-sm font-medium text-gray-700">Horaires
+                                d'ouverture</label>
+                            <div class="mt-1">
+                                <input type="text" id="openingHours" formControlName="openingHours"
+                                    placeholder="Ex: Lundi-Samedi 8h00 - 20h00, Dimanche fermé"
+                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            <p class="mt-2 text-sm text-gray-500">Précisez les jours et heures d'ouverture.</p>
+                            <div *ngIf="settingsForm.get('openingHours')?.invalid && settingsForm.get('openingHours')?.touched"
+                                class="text-red-500 text-xs mt-1">
+                                Ce champ est requis.
+                            </div>
+                        </div>
+
+                        <div class="sm:col-span-6">
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Numéro de
+                                téléphone</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-phone text-gray-400"></i>
+                                </div>
+                                <input type="text" id="phone" formControlName="phone"
+                                    class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                                    placeholder="+237 6...">
+                            </div>
+                            <div *ngIf="settingsForm.get('phone')?.invalid && settingsForm.get('phone')?.touched"
+                                class="text-red-500 text-xs mt-1">
+                                Numéro de téléphone invalide (requis).
+                            </div>
+                        </div>
+
+                        <div class="sm:col-span-6">
+                            <label for="description" class="block text-sm font-medium text-gray-700">Description /
+                                Message (Optionnel)</label>
+                            <div class="mt-1">
+                                <textarea id="description" formControlName="description" rows="3"
+                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md"
+                                    placeholder="Informations supplémentaires, services de garde, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Actions -->
+            <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 rounded-b-lg">
+                <button type="submit" [disabled]="settingsForm.invalid || isSaving || isLoading"
+                    class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    <i *ngIf="isSaving" class="fas fa-circle-notch fa-spin mr-2"></i>
+                    <span *ngIf="!isSaving">Enregistrer les modifications</span>
+                    <span *ngIf="isSaving">Enregistrement...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

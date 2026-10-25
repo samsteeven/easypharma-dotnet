@@ -1,0 +1,118 @@
+<div class="page-bg-refined min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="auth-card w-full max-w-4xl grid md:grid-cols-2 gap-0 overflow-hidden !p-0 animate-fadeInUp">
+
+    <!-- Left Side: Branding -->
+    <div class="hidden md:flex flex-col justify-between p-12 bg-indigo-600 text-white relative overflow-hidden">
+      <!-- Decorative circles -->
+      <div class="absolute -top-12 -left-12 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-12 -right-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl"></div>
+
+      <div class="relative z-10">
+        <div class="flex items-center gap-3 mb-10">
+          <div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm shadow-xl">
+            <fa-icon [icon]="faUserPlus" class="text-2xl"></fa-icon>
+          </div>
+          <span class="text-2xl font-extrabold tracking-tight">EasyPharma</span>
+        </div>
+
+        <h2 class="text-4xl font-extrabold leading-tight tracking-tight mb-6">
+          Votre santé,<br>notre priorité.
+        </h2>
+        <p class="text-indigo-100 text-lg font-medium leading-relaxed">
+          Commandez vos médicaments en quelques clics et faites-vous livrer à domicile en toute sécurité.
+        </p>
+      </div>
+
+      <div class="relative z-10 space-y-5">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+            <fa-icon [icon]="faCheck" class="text-xs"></fa-icon>
+          </div>
+          <span class="font-bold text-sm">Livraison express 24h/24</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+            <fa-icon [icon]="faCheck" class="text-xs"></fa-icon>
+          </div>
+          <span class="font-bold text-sm">Pharmacies certifiées</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="p-8 md:p-12 bg-white">
+      <div class="mb-8">
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Créer un compte</h2>
+        <p class="text-slate-500 font-medium mt-1">Rejoignez-nous en quelques secondes.</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
+        <!-- Name Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="form-group grid gap-1.5">
+            <label class="form-label">Prénom</label>
+            <input type="text" formControlName="firstName" class="form-input" placeholder="Jean">
+          </div>
+          <div class="form-group grid gap-1.5">
+            <label class="form-label">Nom</label>
+            <input type="text" formControlName="lastName" class="form-input" placeholder="Dupont">
+          </div>
+        </div>
+
+        <div class="form-group grid gap-1.5">
+          <label class="form-label">Adresse email</label>
+          <input type="email" formControlName="email" class="form-input" placeholder="votre@email.com">
+        </div>
+
+        <div class="form-group grid gap-1.5">
+          <label class="form-label">Téléphone (Optionnel)</label>
+          <input type="tel" formControlName="phone" class="form-input" placeholder="6xx xxx xxx">
+        </div>
+
+        <!-- Password Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="form-group grid gap-1.5">
+            <label class="form-label">Mot de passe</label>
+            <div class="relative">
+              <input [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-input"
+                placeholder="••••••••">
+              <button type="button" (click)="togglePassword()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors">
+                <fa-icon [icon]="showPassword ? faEyeSlash : faEye"></fa-icon>
+              </button>
+            </div>
+          </div>
+          <div class="form-group grid gap-1.5">
+            <label class="form-label">Confirmation</label>
+            <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword"
+              class="form-input" placeholder="••••••••">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <input id="accept-terms" type="checkbox" formControlName="acceptTerms"
+            class="h-5 w-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+          <label for="accept-terms" class="text-xs font-bold text-slate-500 cursor-pointer uppercase tracking-wider">
+            J'accepte les <a href="#" class="text-indigo-600 hover:underline">conditions</a>
+          </label>
+        </div>
+
+        <button type="submit" [disabled]="registerForm.invalid || isLoading"
+          class="btn-primary w-full shadow-lg shadow-indigo-100">
+          <span *ngIf="!isLoading">Démarrer maintenant</span>
+          <div *ngIf="isLoading" class="flex items-center gap-2">
+            <fa-icon [icon]="faCircleNotch" class="fa-spin"></fa-icon>
+            <span>Création...</span>
+          </div>
+        </button>
+      </form>
+
+      <div class="mt-8 text-center">
+        <p class="text-sm font-bold text-slate-500">
+          Déjà inscrit ?
+          <a routerLink="/login" class="text-indigo-600 hover:text-indigo-700 ml-1">Se connecter</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

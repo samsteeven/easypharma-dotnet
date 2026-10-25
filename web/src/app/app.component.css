@@ -1,0 +1,5 @@
+/* Styles pour le composant app */
+:host {
+  display: block;
+  min-height: 100vh;
+}

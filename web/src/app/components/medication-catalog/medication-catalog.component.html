@@ -1,0 +1,318 @@
+<div class="page-bg-refined p-8 space-y-8 animate-fadeInUp">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Catalogue de Médicaments</h1>
+            <p class="mt-1 text-slate-500 font-medium">Recherchez et gérez les produits du catalogue global.</p>
+        </div>
+        <div class="flex gap-4">
+            <button (click)="openCreateModal()" class="btn-primary shadow-lg shadow-indigo-100">
+                <fa-icon [icon]="faPlus" class="mr-2"></fa-icon> Créer un médicament
+            </button>
+            <button (click)="goToInventory()"
+                class="inline-flex items-center px-5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50 hover:shadow-sm active:scale-95 transition-all duration-200">
+                <fa-icon [icon]="faArrowLeft" class="mr-2 text-slate-400"></fa-icon> Retour à l'inventaire
+            </button>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="auth-card !p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Search -->
+            <div class="lg:col-span-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Nom du
+                    produit</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <fa-icon [icon]="faSearch" class="text-slate-400 text-sm"></fa-icon>
+                    </div>
+                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                        placeholder="Ex: Paracétamol, Efferalgan..." class="form-input !pl-11 !py-3">
+                </div>
+            </div>
+
+            <!-- Therapeutic Class -->
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Classe
+                    thérapeutique</label>
+                <div class="relative">
+                    <select [(ngModel)]="selectedClass" (change)="onFilter()" class="form-input !py-3 !appearance-none">
+                        <option value="">Toutes les classes</option>
+                        <option *ngFor="let class of therapeuticClasses" [value]="class">{{ class }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                        <fa-icon [icon]="faChevronDown" class="text-slate-400 text-xs"></fa-icon>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Toggle -->
+            <div class="flex items-end">
+                <button (click)="onFilter()" class="btn-primary !w-full !py-3">
+                    <fa-icon [icon]="faFilter" class="mr-2"></fa-icon> Appliquer les filtres
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-6 flex items-center">
+            <label class="relative flex items-center cursor-pointer group">
+                <input type="checkbox" [(ngModel)]="prescriptionOnly" (change)="onFilter()" class="sr-only peer">
+                <div
+                    class="w-10 h-6 bg-slate-200 rounded-full transition-colors group-hover:bg-slate-300 peer-checked:bg-indigo-600">
+                </div>
+                <div
+                    class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4">
+                </div>
+                <span class="ml-3 text-sm font-bold text-slate-600">Ordonnance requise uniquement</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-24">
+        <div class="icon-container-indigo w-12 h-12 mb-4 animate-spin !bg-transparent">
+            <fa-icon [icon]="faCircleNotch" class="text-3xl"></fa-icon>
+        </div>
+        <p class="text-slate-500 font-bold uppercase tracking-widest text-xs">Chargement du catalogue...</p>
+    </div>
+
+    <!-- Medications Grid -->
+    <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div *ngFor="let med of medications"
+            class="auth-card !p-0 overflow-hidden hover:shadow-md transition-all group border-transparent hover:border-indigo-100">
+            <!-- Card Header Area -->
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-container-blue w-12 h-12 shrink-0">
+                        <fa-icon [icon]="faCapsules" class="text-lg"></fa-icon>
+                    </div>
+                    <span *ngIf="med.requiresPrescription"
+                        class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-600 uppercase tracking-widest border border-amber-100">
+                        <fa-icon [icon]="faPrescription" class="mr-1"></fa-icon> Ordonnance
+                    </span>
+                    <span *ngIf="!med.requiresPrescription"
+                        class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 uppercase tracking-widest border border-emerald-100">
+                        Libre
+                    </span>
+                </div>
+
+                <h3
+                    class="text-xl font-extrabold text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
+                    {{ med.name }}</h3>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">{{ med.therapeuticClass
+                    }}</p>
+
+                <div class="mt-6 space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-500 font-medium">Générique :</span>
+                        <span class="text-slate-900 font-bold">{{ med.genericName || 'N/A' }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-500 font-medium">Dosage :</span>
+                        <span class="text-slate-900 font-bold">{{ med.dosage || 'Standard' }}</span>
+                    </div>
+                </div>
+
+                <p class="mt-4 text-sm text-slate-500 line-clamp-2 leading-relaxed font-medium">
+                    {{ med.description }}
+                </p>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="p-6 bg-slate-50/50 border-t border-slate-100">
+                <button (click)="openAddToInventoryModal(med)"
+                    class="btn-primary !w-full !py-3 shadow-sm hover:shadow-indigo-100">
+                    <fa-icon [icon]="faPlus" class="mr-2"></fa-icon> Ajouter au stock
+                </button>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div *ngIf="medications.length === 0" class="col-span-full auth-card !py-20 flex flex-col items-center">
+            <div class="icon-container-blue w-20 h-20 mb-6 !bg-slate-50 !text-slate-300">
+                <fa-icon [icon]="faSearch" class="text-3xl"></fa-icon>
+            </div>
+            <h3 class="text-xl font-extrabold text-slate-900 tracking-tight">Aucun résultat</h3>
+            <p class="text-slate-500 font-medium mt-2">Vous ne trouvez pas ce que vous cherchez ?</p>
+            <button (click)="openCreateModal()" class="mt-8 btn-primary !px-8">
+                <fa-icon [icon]="faPlus" class="mr-2"></fa-icon> Créer un nouveau produit
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add to Inventory Modal -->
+<div *ngIf="showAddModal && selectedMedication" class="fixed inset-0 z-[100] overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" (click)="closeModal()"></div>
+
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="auth-card !p-0 w-full max-w-lg overflow-hidden animate-fadeInUp shadow-2xl">
+            <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="icon-container-indigo w-12 h-12">
+                        <fa-icon [icon]="faPills" class="text-xl"></fa-icon>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900 tracking-tight">Configuration Stock</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{
+                            selectedMedication.name }}</p>
+                    </div>
+                </div>
+                <button (click)="closeModal()"
+                    class="w-10 h-10 rounded-xl hover:bg-white flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">
+                    <fa-icon [icon]="faTimes"></fa-icon>
+                </button>
+            </div>
+
+            <div class="p-8">
+                <form (ngSubmit)="addToInventory()" class="space-y-6">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Prix
+                                de vente (XAF)</label>
+                            <input type="number" [(ngModel)]="addPrice" name="price" min="0" step="100" required
+                                class="form-input !py-3 font-extrabold text-lg text-indigo-600" placeholder="0">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Stock
+                                Initial</label>
+                            <input type="number" [(ngModel)]="addStock" name="stock" min="0" required
+                                class="form-input !py-3 font-extrabold text-lg" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Date
+                            d'expiration</label>
+                        <input type="date" [(ngModel)]="addExpiryDate" name="expiryDate"
+                            class="form-input !py-3 font-bold">
+                    </div>
+
+                    <div class="mt-10 flex gap-4">
+                        <button type="button" (click)="closeModal()"
+                            class="flex-1 px-6 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                            Annuler
+                        </button>
+                        <button type="submit" [disabled]="isAdding || addPrice <= 0"
+                            class="flex-[2] btn-primary !py-3.5 shadow-lg shadow-indigo-100">
+                            <span *ngIf="!isAdding">Confirmer l'ajout</span>
+                            <span *ngIf="isAdding" class="flex items-center gap-2">
+                                <fa-icon [icon]="faCircleNotch" animation="spin"></fa-icon> En cours...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Medication Modal -->
+<div *ngIf="showCreateModal" class="fixed inset-0 z-[100] overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" (click)="closeCreateModal()"></div>
+
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="auth-card !p-0 w-full max-w-2xl overflow-hidden animate-fadeInUp shadow-2xl">
+            <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="icon-container-blue w-12 h-12">
+                        <fa-icon [icon]="faFileMedical" class="text-xl"></fa-icon>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900 tracking-tight">Nouveau Médicament</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ajout au catalogue
+                            national</p>
+                    </div>
+                </div>
+                <button (click)="closeCreateModal()"
+                    class="w-10 h-10 rounded-xl hover:bg-white flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">
+                    <fa-icon [icon]="faTimes"></fa-icon>
+                </button>
+            </div>
+
+            <div class="p-8">
+                <form (ngSubmit)="createMedication()" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Nom
+                                Commercial *</label>
+                            <input type="text" [(ngModel)]="newMedication.name" name="name" required class="form-input"
+                                placeholder="Ex: Doliprane">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">DCI /
+                                Générique</label>
+                            <input type="text" [(ngModel)]="newMedication.genericName" name="genericName"
+                                class="form-input" placeholder="Ex: Paracétamol">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Classe
+                                Thérapeutique *</label>
+                            <div class="relative">
+                                <select [(ngModel)]="newMedication.therapeuticClass" name="therapeuticClass" required
+                                    class="form-input !appearance-none">
+                                    <option value="">Sélectionner une classe</option>
+                                    <option *ngFor="let class of therapeuticClasses" [value]="class">{{ class }}
+                                    </option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                                    <fa-icon [icon]="faChevronDown" class="text-slate-400 text-xs"></fa-icon>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Dosage</label>
+                            <input type="text" [(ngModel)]="newMedication.dosage" name="dosage" class="form-input"
+                                placeholder="Ex: 500mg, 1g">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Description
+                            & Indications</label>
+                        <textarea [(ngModel)]="newMedication.description" name="description" rows="3" class="form-input"
+                            placeholder="Détails du médicament..."></textarea>
+                    </div>
+
+                    <div class="flex items-center">
+                        <label class="relative flex items-center cursor-pointer group">
+                            <input type="checkbox" [(ngModel)]="newMedication.requiresPrescription"
+                                name="requiresPrescription" class="sr-only peer">
+                            <div
+                                class="w-10 h-6 bg-slate-200 rounded-full transition-colors group-hover:bg-slate-300 peer-checked:bg-amber-500">
+                            </div>
+                            <div
+                                class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4">
+                            </div>
+                            <span class="ml-3 text-sm font-bold text-slate-600 uppercase tracking-wide">Nécessite une
+                                ordonnance</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-10 flex gap-4 border-t border-slate-100 pt-8">
+                        <button type="button" (click)="closeCreateModal()"
+                            class="flex-1 px-6 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                            [disabled]="isCreating || !newMedication.name || !newMedication.therapeuticClass"
+                            class="flex-[2] btn-primary !py-3.5 shadow-lg shadow-indigo-100">
+                            <span *ngIf="!isCreating">Créer le produit</span>
+                            <span *ngIf="isCreating" class="flex items-center gap-2">
+                                <fa-icon [icon]="faCircleNotch" animation="spin"></fa-icon> Traitement...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

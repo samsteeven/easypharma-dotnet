@@ -167,4 +167,87 @@ public class ApiIntegrationTests(ApiFixture fixture)
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    private static async Task<string[]> PharmacyNamesAsync(HttpClient client, string url)
+    {
+        using var json = JsonDocument.Parse(await client.GetStringAsync(url));
+        return json.RootElement.EnumerateArray().Select(r => r.GetProperty("pharmacy").GetProperty("name").GetString()!).ToArray();
+    }
+
+    [Fact]
+    public async Task Patient_search_sorts_by_price_and_by_distance_with_stdistance()
+    {
+        var client = await AuthenticatedClientAsync();
+
+        // Prix croissants dans le jeu de démonstration : Akwa < Bastos < Centre.
+        (await PharmacyNamesAsync(client, "/api/v1/patient/search?query=doli"))
+            .Should().Equal("Pharmacie Akwa", "Pharmacie Bastos", "Pharmacie Centre");
+
+        (await PharmacyNamesAsync(client, "/api/v1/patient/search?query=doli&sortBy=POSTGIS_NEAREST&userLat=3.855&userLon=11.51"))
+            .Should().Equal("Pharmacie Bastos", "Pharmacie Centre", "Pharmacie Akwa");
+
+        (await PharmacyNamesAsync(client, "/api/v1/patient/search?query=doli&sortBy=POSTGIS_NEAREST&userLat=4.05&userLon=9.77"))
+            .First().Should().Be("Pharmacie Akwa");
+
+        (await PharmacyNamesAsync(client, "/api/v1/patient/search?query=doli&sortBy=NEAREST&userLat=3.855&userLon=11.51"))
+            .Should().Equal("Pharmacie Bastos", "Pharmacie Centre", "Pharmacie Akwa");
+    }
+
+    [Fact]
+    public async Task Patient_search_filters_by_class_symptom_and_requires_coordinates_for_stdistance_sort()
+    {
+        var client = await AuthenticatedClientAsync();
+        (await PharmacyNamesAsync(client, "/api/v1/patient/search?query=fi%C3%A8vre&therapeuticClass=ANTALGIQUE")).Should().HaveCount(3);
+        (await PharmacyNamesAsync(client, "/api/v1/patient/search?query=fi%C3%A8vre&therapeuticClass=ANTIBIOTIQUE")).Should().BeEmpty();
+        (await client.GetAsync("/api/v1/patient/search?query=doli&sortBy=POSTGIS_NEAREST")).StatusCode
+            .Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Patient_search_reports_distance_in_km()
+    {
+        var client = await AuthenticatedClientAsync();
+        using var json = JsonDocument.Parse(await client.GetStringAsync(
+            "/api/v1/patient/search?query=doli&sortBy=POSTGIS_NEAREST&userLat=3.855&userLon=11.51"));
+        json.RootElement[0].GetProperty("distanceKm").GetDouble().Should().BeInRange(0.5, 1.5); // Bastos ~ 0,9 km
+    }
+
+    [Fact]
+    public async Task Users_me_and_auth_me_return_the_profile_wrapped_like_spring()
+    {
+        var client = await AuthenticatedClientAsync();
+        using var json = JsonDocument.Parse(await client.GetStringAsync("/api/v1/users/me"));
+        json.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        json.RootElement.GetProperty("data").GetProperty("role").GetString().Should().Be("PATIENT");
+    }
+
+    [Fact]
+    public async Task Orders_me_is_an_alias_of_my_orders_for_the_angular_front()
+    {
+        var client = await AuthenticatedClientAsync();
+        (await client.GetAsync("/api/v1/orders/me")).StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Register_refuses_non_patient_roles()
+    {
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/register", new
+        {
+            email = $"admin-{Unique()}@test.local", password = "Test1234!", firstName = "A", lastName = "B",
+            phone = $"68{Random.Shared.Next(1_000_000, 9_999_999)}", role = "SUPER_ADMIN",
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Pharmacy_by_id_is_public_and_unknown_ids_are_not_found()
+    {
+        var url = FormattableString.Invariant($"/api/v1/pharmacies/nearby?latitude={UserLat}&longitude={UserLon}&radiusKm=10");
+        using var nearby = JsonDocument.Parse(await Client.GetStringAsync(url));
+        var id = nearby.RootElement[0].GetProperty("id").GetGuid();
+
+        using var pharmacy = JsonDocument.Parse(await Client.GetStringAsync($"/api/v1/pharmacies/{id}"));
+        pharmacy.RootElement.GetProperty("name").GetString().Should().Be("Pharmacie Bastos");
+        (await Client.GetAsync($"/api/v1/pharmacies/{Guid.NewGuid()}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

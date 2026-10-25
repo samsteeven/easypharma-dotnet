@@ -1,6 +1,6 @@
 # SQL Server 2022 + schéma EasyPharma + API ASP.NET Core.
 #   cp .env.example .env   (MSSQL_SA_PASSWORD, JWT_SECRET)
-#   docker compose up -d --build        ->  http://localhost:8080/swagger
+#   docker compose up -d --build   ->  front http://localhost:4200, Swagger http://localhost:8080/swagger
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -43,6 +43,14 @@ services:
       Jwt__Secret: ${JWT_SECRET:?définir JWT_SECRET dans .env}
     ports:
       - "${API_PORT:-8080}:8080"
+
+  web:
+    build: ./web
+    container_name: easypharma-dotnet-web
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-4200}:80"
 
 volumes:
   mssqldata:

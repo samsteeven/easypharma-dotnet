@@ -1,0 +1,198 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <!-- En-tête -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Mon Profil</h1>
+    <p class="text-gray-600">Gérez vos informations personnelles</p>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" *ngIf="user && !editMode">
+    <!-- Carte Profil -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="text-center">
+          <!-- Avatar -->
+          <div class="relative inline-block mb-4">
+            <div
+              class="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold">
+              {{ user.firstName?.charAt(0) }}{{ user.lastName?.charAt(0) }}
+            </div>
+            <button
+              class="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
+              <i class="fas fa-camera"></i>
+            </button>
+          </div>
+
+          <h2 class="text-2xl font-bold text-gray-800 mb-1">
+            {{ user.firstName }} {{ user.lastName }}
+          </h2>
+          <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold mb-4" [ngClass]="{
+                      'bg-red-100 text-red-700': user.role === 'ADMIN',
+                      'bg-blue-100 text-blue-700': user.role === 'CLIENT',
+                      'bg-purple-100 text-purple-700': user.role === 'COLLECTEUR'
+                    }">
+            <i class="fas fa-shield-alt mr-1"></i>{{ getRoleLabel(user.role) }}
+          </span>
+
+          <div class="space-y-3 text-sm text-gray-600">
+            <div class="flex items-center justify-center">
+              <i class="fas fa-calendar mr-2 text-gray-400"></i>
+              Membre depuis {{ user.createdAt | date:'MMMM yyyy' }}
+            </div>
+            <div class="flex items-center justify-center" *ngIf="user.isActive">
+              <i class="fas fa-check-circle mr-2 text-green-500"></i>
+              Compte actif
+            </div>
+          </div>
+
+          <button (click)="toggleEditMode()"
+            class="mt-6 w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+            <i class="fas fa-edit mr-2"></i>Modifier le profil
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informations détaillées -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-6">Informations personnelles</h3>
+
+        <div class="space-y-4">
+          <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+            <i class="fas fa-envelope text-blue-600 mt-1 mr-4"></i>
+            <div class="flex-1">
+              <p class="text-sm text-gray-500">Email</p>
+              <p class="font-semibold text-gray-800">{{ user.email }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-start p-4 bg-gray-50 rounded-lg" *ngIf="user.phone">
+            <i class="fas fa-phone text-blue-600 mt-1 mr-4"></i>
+            <div class="flex-1">
+              <p class="text-sm text-gray-500">Téléphone</p>
+              <p class="font-semibold text-gray-800">{{ user.phone }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+            <i class="fas fa-user-tag text-blue-600 mt-1 mr-4"></i>
+            <div class="flex-1">
+              <p class="text-sm text-gray-500">Rôle</p>
+              <p class="font-semibold text-gray-800">{{ getRoleLabel(user.role) }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+            <i class="fas fa-id-card text-blue-600 mt-1 mr-4"></i>
+            <div class="flex-1">
+              <p class="text-sm text-gray-500">ID Utilisateur</p>
+              <p class="font-mono font-semibold text-gray-800 text-sm">{{ user.id }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Sécurité -->
+      <div class="bg-white rounded-xl shadow-md p-6 mt-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-6">Sécurité</h3>
+
+        <button (click)="changePassword()"
+          class="flex items-center justify-between w-full p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+          <div class="flex items-center">
+            <i class="fas fa-lock text-blue-600 mr-4"></i>
+            <div class="text-left">
+              <p class="font-semibold text-gray-800">Changer le mot de passe</p>
+              <p class="text-sm text-gray-500">Dernière modification il y a 3 mois</p>
+            </div>
+          </div>
+          <i class="fas fa-chevron-right text-gray-400"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode Édition -->
+  <div class="bg-white rounded-xl shadow-md p-8" *ngIf="editMode">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-gray-800">Modifier le profil</h3>
+      <button (click)="cancelEdit()" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Prénom -->
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">Prénom *</label>
+          <input type="text" formControlName="firstName"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-red-500]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+          <div class="mt-1 text-sm text-red-600"
+            *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+            Le prénom est requis
+          </div>
+        </div>
+
+        <!-- Nom -->
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">Nom *</label>
+          <input type="text" formControlName="lastName"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-red-500]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+          <div class="mt-1 text-sm text-red-600"
+            *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+            Le nom est requis
+          </div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="mb-6">
+        <label class="block text-gray-700 font-semibold mb-2">Email *</label>
+        <input type="email" formControlName="email"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          [class.border-red-500]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+        <div class="mt-1 text-sm text-red-600"
+          *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+          <span *ngIf="profileForm.get('email')?.errors?.['required']">L'email est requis</span>
+          <span *ngIf="profileForm.get('email')?.errors?.['email']">Email invalide</span>
+        </div>
+      </div>
+
+      <!-- Téléphone -->
+      <div class="mb-6">
+        <label class="block text-gray-700 font-semibold mb-2">Téléphone</label>
+        <input type="tel" formControlName="phone"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="+237 6XX XX XX XX">
+      </div>
+
+      <!-- Messages -->
+      <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700" *ngIf="successMessage">
+        <i class="fas fa-check-circle mr-2"></i>{{ successMessage }}
+      </div>
+
+      <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700" *ngIf="errorMessage">
+        <i class="fas fa-exclamation-circle mr-2"></i>{{ errorMessage }}
+      </div>
+
+      <!-- Boutons -->
+      <div class="flex gap-4">
+        <button type="button" (click)="cancelEdit()"
+          class="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition">
+          Annuler
+        </button>
+        <button type="submit" [disabled]="profileForm.invalid || loading"
+          class="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
+          {{ loading ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loader -->
+  <div class="text-center py-12" *ngIf="loadingProfile">
+    <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
+    <p class="mt-4 text-gray-600">Chargement du profil...</p>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-900">Validation de la commande</h2>
+        </div>
+
+        <div class="p-6">
+            <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+                {{ errorMessage }}
+            </div>
+
+            <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+                <div class="mb-6">
+                    <label for="address" class="block text-sm font-medium text-gray-700">Adresse de livraison</label>
+                    <div class="mt-1">
+                        <textarea id="address" rows="3" formControlName="address"
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            placeholder="Quartier, Rue, Repère..."></textarea>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Précisez votre localisation pour faciliter la livraison.
+                        <span *ngIf="checkoutForm.get('latitude')?.value" class="text-green-600 ml-2">
+                            <i class="fas fa-map-marker-alt"></i> Coordonnées GPS détectées.
+                        </span>
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-md mb-6 flex justify-between items-center">
+                    <span class="text-gray-700 font-medium">Total à payer</span>
+                    <span class="text-2xl font-bold text-blue-600">{{ totalPrice | currency:'XAF':'symbol':'1.0-0'
+                        }}</span>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" [disabled]="checkoutForm.invalid || isSubmitting"
+                        class="w-full sm:w-auto inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+                        <i *ngIf="isSubmitting" class="fas fa-circle-notch fa-spin mr-2"></i>
+                        Confirm & Commander
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

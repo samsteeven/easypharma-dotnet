@@ -1,0 +1,61 @@
+<div class="page-bg-refined flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="auth-card w-full max-w-md space-y-8 animate-fadeInUp">
+
+    <div class="text-center">
+      <div class="icon-container-blue w-20 h-20 mb-6">
+        <fa-icon [icon]="faHeartbeat" class="text-4xl"></fa-icon>
+      </div>
+      <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Bienvenue</h2>
+      <p class="mt-2 text-slate-500">Connectez-vous à votre espace personnel</p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="errorMessage"
+      class="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 animate-fadeIn">
+      <fa-icon [icon]="faExclamationCircle" class="text-red-500 mt-1"></fa-icon>
+      <div class="flex-1">
+        <h3 class="text-sm font-bold text-red-800">Échec de connexion</h3>
+        <p class="text-sm text-red-600">{{ errorMessage }}</p>
+      </div>
+    </div>
+
+    <form class="mt-8 space-y-6" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="space-y-4">
+        <div class="form-group grid gap-2">
+          <label for="email" class="form-label">Adresse email</label>
+          <div class="relative">
+            <input id="email" name="email" type="email" [(ngModel)]="loginData.email" required class="form-input"
+              placeholder="votre@email.com">
+          </div>
+        </div>
+
+        <div class="form-group grid gap-2">
+          <label for="password" class="form-label">Mot de passe</label>
+          <div class="relative">
+            <input id="password" name="password" [(ngModel)]="loginData.password"
+              [type]="showPassword ? 'text' : 'password'" required class="form-input" placeholder="••••••••">
+            <button type="button" (click)="togglePasswordVisibility()"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none">
+              <fa-icon [icon]="showPassword ? faEyeSlash : faEye"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end">
+        <a routerLink="/forgot-password"
+          class="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+          Mot de passe oublié?
+        </a>
+      </div>
+
+      <button type="submit" [disabled]="isLoading" class="btn-primary w-full">
+        <div *ngIf="isLoading" class="mr-2">
+          <fa-icon [icon]="faCircleNotch" class="fa-spin"></fa-icon>
+        </div>
+        <span *ngIf="!isLoading">Se connecter</span>
+        <span *ngIf="isLoading">Connexion en cours...</span>
+      </button>
+    </form>
+  </div>
+</div>

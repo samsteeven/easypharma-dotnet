@@ -1,0 +1,199 @@
+<div class="page-bg-refined p-8 space-y-8 animate-fadeInUp">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Tableau de Bord Financier</h1>
+            <p class="mt-1 text-slate-500 font-medium">Gérez les revenus et les reversements aux pharmacies partenaires.
+            </p>
+        </div>
+    </div>
+
+    <!-- Selection Controls -->
+    <div class="auth-card !p-6 flex flex-col md:flex-row md:items-end gap-6">
+        <div class="flex-1 max-w-xl space-y-2">
+            <label for="pharmacy-select" class="form-label">Sélectionner une Pharmacie</label>
+            <div class="relative">
+                <select id="pharmacy-select" [(ngModel)]="selectedPharmacyId" (change)="onPharmacySelect()"
+                    class="form-input !py-2.5 appearance-none pr-10">
+                    <option value="">-- Choisir une pharmacie --</option>
+                    <option *ngFor="let pharmacy of pharmacies" [value]="pharmacy.id">
+                        {{ pharmacy.name }} - {{ pharmacy.city }}
+                    </option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="loadingStats" class="pb-2">
+            <fa-icon [icon]="faCircleNotch" class="fa-spin text-indigo-600 text-xl"></fa-icon>
+        </div>
+    </div>
+
+    <!-- Stats Display (Only if pharmacy selected) -->
+    <div *ngIf="selectedPharmacyId && !loadingStats" class="space-y-8 animate-fadeIn">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Total Revenue -->
+            <div class="auth-card !p-6 hover:shadow-md transition-shadow border-t-4 border-t-indigo-500">
+                <div class="flex items-center gap-5">
+                    <div class="icon-container-indigo w-14 h-14 shrink-0">
+                        <i class="fas fa-coins text-xl"></i>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-bold text-slate-500 uppercase tracking-widest">Revenu Total</dt>
+                        <dd class="mt-1 text-2xl font-extrabold text-slate-900 tracking-tight">{{ totalRevenue |
+                            number:'1.0-0' }} <span class="text-sm">FCFA</span></dd>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Payout (Rest à Payer) -->
+            <div class="auth-card !p-6 hover:shadow-md transition-shadow border-t-4"
+                [ngClass]="{'border-t-red-500': restToPay > 0, 'border-t-emerald-500': restToPay <= 0}">
+                <div class="flex items-center gap-5">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+                        [ngClass]="restToPay > 0 ? 'bg-red-50 text-red-600' : 'icon-container-emerald'">
+                        <i class="fas fa-hand-holding-usd text-xl"></i>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-bold text-slate-500 uppercase tracking-widest">Reste à Payer</dt>
+                        <dd class="mt-1 text-2xl font-extrabold text-slate-900 tracking-tight">{{ restToPay |
+                            number:'1.0-0' }} <span class="text-sm">FCFA</span></dd>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                    <span *ngIf="restToPay > 0"
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 uppercase">Urgent</span>
+                    <span *ngIf="restToPay <= 0"
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase">À
+                        jour</span>
+                    <span class="text-[10px] font-bold text-slate-400">NET À REVERSER</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settlement Actions -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Create Payout Form -->
+            <div class="auth-card !p-0 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-lg font-bold text-slate-900 tracking-tight">Enregistrer un Règlement</h3>
+                </div>
+                <div class="p-8">
+                    <form (ngSubmit)="submitPayout()" class="space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div class="space-y-1.5">
+                                <label class="form-label">Montant (FCFA)</label>
+                                <input type="number" [(ngModel)]="newPayout.amount" name="amount"
+                                    class="form-input !py-2.5 font-bold text-indigo-600" placeholder="0">
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="form-label">Méthode</label>
+                                <div class="relative">
+                                    <select [(ngModel)]="newPayout.method" name="method"
+                                        class="form-input !py-2.5 appearance-none pr-10">
+                                        <option value="MTN_MOMO_PAYOUT">MTN Mobile Money</option>
+                                        <option value="ORANGE_MONEY_PAYOUT">Orange Money</option>
+                                        <option value="CASH_PAYOUT">Espèces / Virement</option>
+                                    </select>
+                                    <div
+                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="form-label">Référence (ID Transaction)</label>
+                            <input type="text" [(ngModel)]="newPayout.transactionReference" name="transactionReference"
+                                placeholder="Ex: 548946513" class="form-input !py-2.5">
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="form-label">Notes (Optionnel)</label>
+                            <textarea [(ngModel)]="newPayout.notes" name="notes" rows="3" class="form-input !py-2.5"
+                                placeholder="Détails additionnels..."></textarea>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" [disabled]="newPayout.amount <= 0"
+                                class="btn-primary w-full shadow-lg shadow-indigo-200">
+                                <i class="fas fa-paper-plane mr-2"></i> Enregistrer le Paiement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Payout History -->
+            <div class="auth-card !p-0 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-900 tracking-tight">Historique des Règlements</h3>
+                    <span
+                        class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">{{
+                        payouts.length }} transactions</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-50/50 border-b border-slate-100">
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    Date</th>
+                                <th
+                                    class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    Référence</th>
+                                <th
+                                    class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    Montant</th>
+                                <th
+                                    class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    Méthode</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <tr *ngFor="let payout of payouts" class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500">
+                                    {{ payout.processedAt | date:'dd/MM/yyyy' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
+                                    {{ payout.transactionReference || '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-extrabold text-emerald-600">
+                                    {{ payout.amount | number:'1.0-0' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100/50">
+                                        {{ payout.method.replace('_PAYOUT', '').replace(/_/g, ' ') }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr *ngIf="payouts.length === 0">
+                                <td colspan="4" class="px-6 py-12 text-center">
+                                    <div class="text-slate-300 mb-2">
+                                        <i class="fas fa-history text-4xl"></i>
+                                    </div>
+                                    <p class="text-slate-400 font-medium">Aucun règlement enregistré</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!selectedPharmacyId && !loadingStats" class="auth-card !p-12 text-center animate-fadeIn">
+        <div class="icon-container-blue w-20 h-20 mb-6 !bg-slate-50 !text-slate-300">
+            <i class="fas fa-store-slash text-4xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 tracking-tight">Aucune pharmacie sélectionnée</h3>
+        <p class="mt-2 text-slate-500 max-w-sm mx-auto">Sélectionnez une pharmacie dans la liste déroulante ci-dessus
+            pour consulter les indicateurs financiers et gérer les règlements.</p>
+    </div>
+</div>
