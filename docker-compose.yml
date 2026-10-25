@@ -1,0 +1,48 @@
+# SQL Server 2022 + schéma EasyPharma + API ASP.NET Core.
+#   cp .env.example .env   (MSSQL_SA_PASSWORD, JWT_SECRET)
+#   docker compose up -d --build        ->  http://localhost:8080/swagger
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: easypharma-dotnet-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?définir MSSQL_SA_PASSWORD dans .env}
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - mssqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      mssql:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+    volumes:
+      - ./db:/db:ro
+    entrypoint: ["/bin/sh", "/db/init.sh"]
+    restart: "no"
+
+  api:
+    build: .
+    container_name: easypharma-dotnet-api
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    environment:
+      ConnectionStrings__Default: Server=mssql,1433;Database=easypharma_db;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True
+      Jwt__Secret: ${JWT_SECRET:?définir JWT_SECRET dans .env}
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+volumes:
+  mssqldata:
