@@ -1,0 +1,140 @@
+{
+    "metrics": {
+        "iteration_duration": {
+            "p(99)": 196.3812369999999,
+            "max": 360.5333,
+            "avg": 60.23513706280549,
+            "med": 55.0326,
+            "p(90)": 63.71693,
+            "p(95)": 75.79504499999997
+        },
+        "vus_max": {
+            "value": 16,
+            "min": 16,
+            "max": 16
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 60.033093344613675,
+            "med": 54.8479,
+            "p(90)": 63.482600000000005,
+            "p(95)": 75.09799,
+            "p(99)": 195.77781199999959,
+            "max": 360.0034
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 5319,
+            "value": 0
+        },
+        "data_sent": {
+            "count": 2426533,
+            "rate": 120048.14684000569
+        },
+        "data_received": {
+            "count": 30458059,
+            "rate": 1506855.0641155744
+        },
+        "http_reqs": {
+            "count": 5319,
+            "rate": 263.1475001749369
+        },
+        "http_req_receiving": {
+            "avg": 0.23653748824967077,
+            "med": 0,
+            "p(90)": 0.5598,
+            "p(95)": 0.6614699999999996,
+            "p(99)": 1.5536919999999999,
+            "max": 7.3354
+        },
+        "vus": {
+            "value": 16,
+            "min": 16,
+            "max": 16
+        },
+        "http_req_blocked": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0.544882,
+            "max": 15.7404,
+            "avg": 0.02086309456664787,
+            "med": 0
+        },
+        "iterations": {
+            "count": 5318,
+            "rate": 263.09802705965683
+        },
+        "checks": {
+            "passes": 10636,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.999": false
+            },
+            "value": 1
+        },
+        "http_req_waiting": {
+            "max": 360.0034,
+            "avg": 59.77180851663837,
+            "med": 54.5937,
+            "p(90)": 63.12442,
+            "p(95)": 74.91096999999988,
+            "p(99)": 195.30016199999977
+        },
+        "http_req_connecting": {
+            "avg": 0.009426358338033463,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0.5168999999999971,
+            "max": 6.1996
+        },
+        "http_req_duration": {
+            "avg": 60.033093344613675,
+            "med": 54.8479,
+            "p(90)": 63.482600000000005,
+            "p(95)": 75.09799,
+            "p(99)": 195.77781199999959,
+            "max": 360.0034
+        },
+        "http_req_tls_handshaking": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 0,
+            "avg": 0,
+            "med": 0
+        },
+        "http_req_sending": {
+            "avg": 0.024747339725512314,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0.549082,
+            "max": 3.1216
+        }
+    },
+    "setup_data": {
+        "token": "eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdE5hbWUiOiJCZW5jaCIsImxhc3ROYW1lIjoiUGF0aWVudCIsInJvbGUiOiJQQVRJRU5UIiwidXNlcklkIjoiZTUxNGIyZWUtNTZiYS00ODQ2LWI3YzMtNjNiYzhmZGZkZjJjIiwiZW1haWwiOiJiZW5jaEB0ZXN0LmxvY2FsIiwic3ViIjoiYmVuY2hAdGVzdC5sb2NhbCIsImlhdCI6MTc5Mjk0MDU5OSwiZXhwIjoxNzkzMDI2OTk5fQ.bI0T5qktTjt4cEaLgBKaNjTV8HdOHaGPpjSnbLffPx4"
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "HTTP 200": {
+                    "passes": 5318,
+                    "fails": 0,
+                    "name": "HTTP 200",
+                    "path": "::HTTP 200",
+                    "id": "b70aee8a9f7a77d66dd70844a901558a"
+                },
+                "corps non vide": {
+                    "path": "::corps non vide",
+                    "id": "62b8414326da9170cb4aadd3f8e6d78d",
+                    "passes": 5318,
+                    "fails": 0,
+                    "name": "corps non vide"
+                }
+            }
+    }
+}

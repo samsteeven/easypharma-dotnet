@@ -86,6 +86,18 @@ dotnet test        # nécessite Docker (Testcontainers)
 - **11 de logique** : frais de livraison, Haversine, claims des jetons, vérification d'un hash BCrypt réellement produit par Spring Security.
 - **17 d'API** sur un **vrai SQL Server 2022** (conteneur, schéma `db/V1` + `V2`) : tri par distance et rayon, inscription / connexion (409 sur doublon, refus d'un rôle autre que patient), 401 sans jeton, recherche et filtres du catalogue, recherche nationale (tris prix, distance Haversine et `STDistance`), profil, fiche pharmacie, création de commande (totaux et frais à 815,09 pour 3,15 km), refus pour stock insuffisant.
 
+## Mesure de performance (ASP.NET Core contre Spring Boot)
+
+Mesure k6 des deux API sur la même base SQL Server (2 000 pharmacies, 80 000 offres), 6 passes par ligne, réponses vérifiées identiques avant mesure. Détail, méthode et limites : [`bench/README.md`](bench/README.md).
+
+| Scénario (p95) | ASP.NET Core | Spring Boot d'origine | Spring Boot sans N+1 |
+|---|---|---|---|
+| Pharmacies à proximité | 132 ms | 2,1 s | 226 ms |
+| Recherche triée par distance (≈ 230 offres) | 226 ms | **21,6 s** | 348 ms |
+| Catalogue (15 résultats) | 18 ms | 72 ms | 73 ms |
+
+L'écart d'origine vient d'un **défaut N+1** du code Java (490 requêtes SQL pour 238 lignes, contre 4 côté .NET), trouvé en comptant les requêtes SQL puis corrigé et protégé par un test. Une fois corrigé, l'écart se resserre à 1,5 à 1,7 fois sur les deux requêtes spatiales, **avec des plages de mesure qui se chevauchent** : ces chiffres ne permettent pas de conclure que le framework est plus rapide. Seul le scénario catalogue montre un écart net (≈ 4 fois), dont la cause n'a pas été étudiée. Mesures faites sur un portable (bruit important), une seule configuration.
+
 ## Pièges rencontrés
 
 - **Le téléphone est unique dans le schéma** : un doublon à l'inscription produisait un 500 (violation de contrainte) ; le contrôle est fait avant l'insertion et renvoie 409. Révélé par les tests d'intégration.
