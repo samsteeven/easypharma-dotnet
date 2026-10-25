@@ -39,5 +39,5 @@ jobs:
       - name: Build du front Angular
         working-directory: web
         run: |
-          npm ci
-          npx ng build
+          npm ci --legacy-peer-deps
+          npm run build -- --configuration production
