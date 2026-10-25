@@ -1,5 +1,7 @@
 # EasyPharma en ASP.NET Core : une tranche du backend portée sur C# / SQL Server
 
+[![CI](https://github.com/samsteeven/easypharma-dotnet/actions/workflows/ci.yml/badge.svg)](https://github.com/samsteeven/easypharma-dotnet/actions/workflows/ci.yml)
+
 Réécriture, en **C# / ASP.NET Core 10**, d'une tranche de l'API EasyPharma (recherche et commande de médicaments au Cameroun), initialement écrite en Java / Spring Boot.
 L'API .NET **partage la même base SQL Server** que la version Java et reste compatible avec elle : mêmes tables, mêmes mots de passe (BCrypt), mêmes jetons JWT, mêmes formes JSON. Le **front Angular d'origine fonctionne dessus sans modification du code applicatif** : la pile C# / Angular / SQL Server tourne avec une seule commande `docker compose`.
 
